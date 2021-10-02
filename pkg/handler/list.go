@@ -29,7 +29,24 @@ func (h *Handler) createList(c *gin.Context) {
 	})
 }
 
-func (h *Handler) getAllLists(c *gin.Context) {}
+func (h *Handler) getAllLists(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
+
+	lists, err := h.services.TodoList.GetAll(userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, struct {
+		Data []todos.TodoList `json:"data"`
+	}{
+		Data: lists,
+	})
+}
 
 func (h *Handler) getListById(c *gin.Context) {}
 
