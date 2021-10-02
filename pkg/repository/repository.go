@@ -13,6 +13,7 @@ type Authorization interface {
 type TodoList interface {
 	Create(userId int, list todos.TodoList) (int, error)
 	GetAll(userId int) ([]todos.TodoList, error)
+	GetById(userId int, id int) (todos.TodoList, error)
 }
 
 type TodoItem interface{}
