@@ -7,6 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Sign up
+// @Tags auth
+// @ID sign-up
+// @Accept json
+// @Produce json
+// @Param input body todos.User true "Account info"
+// @Success 200 {integer} integer 1
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-up [post]
 func (h *Handler) signUp(c *gin.Context) {
 	var input todos.User
 
@@ -26,11 +37,19 @@ func (h *Handler) signUp(c *gin.Context) {
 	})
 }
 
+// @Summary Sign in
+// @Tags auth
+// @ID sign-in
+// @Accept json
+// @Produce json
+// @Param input body todos.UserInput true "User credentials"
+// @Success 200 {string} string "<some token>"
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/sign-in [post]
 func (h *Handler) signIn(c *gin.Context) {
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
+	var input todos.UserInput
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
