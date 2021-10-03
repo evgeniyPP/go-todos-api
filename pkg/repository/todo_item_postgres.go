@@ -51,36 +51,37 @@ func (r *TodoItemPostgres) GetAll(listId int) ([]todos.TodoItem, error) {
 	return items, err
 }
 
-func (r *TodoItemPostgres) GetById(listId int, id int) (todos.TodoItem, error) {
+func (r *TodoItemPostgres) GetById(userId int, id int) (todos.TodoItem, error) {
 	var item todos.TodoItem
 	query := fmt.Sprintf(
 		`SELECT ti.id, ti.title, ti.description, ti.done FROM %s ti 
 		 INNER JOIN %s li on ti.id = li.item_id 
-		 WHERE li.list_id = $1 AND li.item_id = $2`,
-		todoItemsTable, listsItemsTable)
-	err := r.db.Get(&item, query, listId, id)
+		 INNER JOIN %s ul on ul.list_id = li.list_id 
+		 WHERE ul.user_id = $1 AND ti.id = $2`,
+		todoItemsTable, listsItemsTable, usersListsTable)
+	err := r.db.Get(&item, query, userId, id)
 	return item, err
 }
 
-func (r *TodoItemPostgres) Update(listId int, id int, input todos.UpdateItemInput) error {
+func (r *TodoItemPostgres) Update(userId int, id int, input todos.UpdateItemInput) error {
 	setValues := make([]string, 0)
 	args := make([]interface{}, 0)
 	argId := 1
 
 	if input.Title != nil {
-		setValues = append(setValues, fmt.Sprintf("title=$%d", argId))
+		setValues = append(setValues, fmt.Sprintf("title = $%d", argId))
 		args = append(args, *input.Title)
 		argId++
 	}
 
 	if input.Description != nil {
-		setValues = append(setValues, fmt.Sprintf("description=$%d", argId))
+		setValues = append(setValues, fmt.Sprintf("description = $%d", argId))
 		args = append(args, *input.Description)
 		argId++
 	}
 
 	if input.Done != nil {
-		setValues = append(setValues, fmt.Sprintf("done=$%d", argId))
+		setValues = append(setValues, fmt.Sprintf("done = $%d", argId))
 		args = append(args, *input.Done)
 		argId++
 	}
@@ -88,20 +89,20 @@ func (r *TodoItemPostgres) Update(listId int, id int, input todos.UpdateItemInpu
 	setQuery := strings.Join(setValues, ", ")
 
 	query := fmt.Sprintf(
-		`UPDATE %s ti SET %s FROM %s li
-		 WHERE ti.id = li.item_id AND li.list_id=$%d AND li.item_id=$%d`,
-		todoItemsTable, setQuery, listsItemsTable, argId, argId+1)
-	args = append(args, listId, id)
+		`UPDATE %s ti SET %s FROM %s li, %s ul
+		 WHERE ti.id = li.item_id AND li.list_id = ul.list_id AND ul.user_id = $%d AND ti.id = $%d`,
+		todoItemsTable, setQuery, listsItemsTable, usersListsTable, argId, argId+1)
+	args = append(args, userId, id)
 
 	_, err := r.db.Exec(query, args...)
 	return err
 }
 
-func (r *TodoItemPostgres) Delete(listId int, id int) error {
+func (r *TodoItemPostgres) Delete(userId int, id int) error {
 	query := fmt.Sprintf(
-		`DELETE FROM %s ti USING %s li 
-		 WHERE ti.id = li.item_id AND li.list_id = $1 AND li.item_id = $2`,
-		todoItemsTable, listsItemsTable)
-	_, err := r.db.Exec(query, listId, id)
+		`DELETE FROM %s ti USING %s li, %s ul
+		 WHERE ti.id = li.item_id AND li.list_id = ul.list_id AND ul.user_id = $1 AND ti.id = $2`,
+		todoItemsTable, listsItemsTable, usersListsTable)
+	_, err := r.db.Exec(query, userId, id)
 	return err
 }

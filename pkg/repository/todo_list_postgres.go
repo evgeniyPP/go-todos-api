@@ -54,7 +54,8 @@ func (r *TodoListPostgres) GetById(userId int, id int) (todos.TodoList, error) {
 	var list todos.TodoList
 	query := fmt.Sprintf(
 		`SELECT tl.id, tl.title, tl.description FROM %s tl 
-		 INNER JOIN %s ul on tl.id = ul.list_id WHERE ul.user_id = $1 AND ul.list_id = $2`,
+		 INNER JOIN %s ul on tl.id = ul.list_id 
+		 WHERE ul.user_id = $1 AND ul.list_id = $2`,
 		todoListsTable, usersListsTable)
 	err := r.db.Get(&list, query, userId, id)
 	return list, err
@@ -66,13 +67,13 @@ func (r *TodoListPostgres) Update(userId int, id int, input todos.UpdateListInpu
 	argId := 1
 
 	if input.Title != nil {
-		setValues = append(setValues, fmt.Sprintf("title=$%d", argId))
+		setValues = append(setValues, fmt.Sprintf("title = $%d", argId))
 		args = append(args, *input.Title)
 		argId++
 	}
 
 	if input.Description != nil {
-		setValues = append(setValues, fmt.Sprintf("description=$%d", argId))
+		setValues = append(setValues, fmt.Sprintf("description = $%d", argId))
 		args = append(args, *input.Description)
 		argId++
 	}
@@ -80,7 +81,9 @@ func (r *TodoListPostgres) Update(userId int, id int, input todos.UpdateListInpu
 	setQuery := strings.Join(setValues, ", ")
 
 	query := fmt.Sprintf(
-		"UPDATE %s tl SET %s FROM %s ul WHERE tl.id = ul.list_id AND ul.list_id=$%d AND ul.user_id=$%d", todoListsTable, setQuery, usersListsTable, argId, argId+1)
+		`UPDATE %s tl SET %s FROM %s ul 
+		 WHERE tl.id = ul.list_id AND ul.list_id = $%d AND ul.user_id = $%d`,
+		todoListsTable, setQuery, usersListsTable, argId, argId+1)
 	args = append(args, id, userId)
 
 	_, err := r.db.Exec(query, args...)
@@ -89,7 +92,8 @@ func (r *TodoListPostgres) Update(userId int, id int, input todos.UpdateListInpu
 
 func (r *TodoListPostgres) Delete(userId int, id int) error {
 	query := fmt.Sprintf(
-		"DELETE FROM %s tl USING %s ul WHERE tl.id = ul.list_id AND ul.user_id = $1 AND ul.list_id = $2",
+		`DELETE FROM %s tl USING %s ul 
+		 WHERE tl.id = ul.list_id AND ul.user_id = $1 AND ul.list_id = $2`,
 		todoListsTable, usersListsTable)
 	_, err := r.db.Exec(query, userId, id)
 	return err

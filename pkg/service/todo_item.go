@@ -32,33 +32,18 @@ func (s *TodoItemService) GetAll(userId int, listId int) ([]todos.TodoItem, erro
 	return s.repo.GetAll(listId)
 }
 
-func (s *TodoItemService) GetById(userId int, listId int, id int) (todos.TodoItem, error) {
-	_, err := s.listRepo.GetById(userId, listId)
-	if err != nil {
-		return todos.TodoItem{}, err
-	}
-
-	return s.repo.GetById(listId, id)
+func (s *TodoItemService) GetById(userId int, id int) (todos.TodoItem, error) {
+	return s.repo.GetById(userId, id)
 }
 
-func (s *TodoItemService) Update(userId int, listId int, id int, input todos.UpdateItemInput) error {
-	_, err := s.listRepo.GetById(userId, listId)
-	if err != nil {
-		return err
-	}
-
+func (s *TodoItemService) Update(userId int, id int, input todos.UpdateItemInput) error {
 	if err := input.Validate(); err != nil {
 		return err
 	}
 
-	return s.repo.Update(listId, id, input)
+	return s.repo.Update(userId, id, input)
 }
 
-func (s *TodoItemService) Delete(userId int, listId int, id int) error {
-	_, err := s.listRepo.GetById(userId, listId)
-	if err != nil {
-		return err
-	}
-
-	return s.repo.Delete(listId, id)
+func (s *TodoItemService) Delete(userId int, id int) error {
+	return s.repo.Delete(userId, id)
 }

@@ -22,9 +22,9 @@ type TodoList interface {
 type TodoItem interface {
 	Create(userId int, listId int, item todos.TodoItem) (int, error)
 	GetAll(userId int, listId int) ([]todos.TodoItem, error)
-	GetById(userId int, listId int, id int) (todos.TodoItem, error)
-	Update(userId int, listId int, id int, input todos.UpdateItemInput) error
-	Delete(userId int, listId int, id int) error
+	GetById(userId int, id int) (todos.TodoItem, error)
+	Update(userId int, id int, input todos.UpdateItemInput) error
+	Delete(userId int, id int) error
 }
 
 type Service struct {
