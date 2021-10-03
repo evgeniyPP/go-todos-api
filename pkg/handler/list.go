@@ -17,6 +17,7 @@ func (h *Handler) createList(c *gin.Context) {
 	var input todos.TodoList
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	id, err := h.services.TodoList.Create(userId, input)
@@ -42,11 +43,7 @@ func (h *Handler) getAllLists(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, struct {
-		Data []todos.TodoList `json:"data"`
-	}{
-		Data: lists,
-	})
+	c.JSON(http.StatusOK, lists)
 }
 
 func (h *Handler) getListById(c *gin.Context) {
